@@ -31,6 +31,10 @@ class Client {
       if (msg.t === 'kicked') this.kicked = true;
       this.waiters = this.waiters.filter((w) => !w());
     };
+    this.ws.onclose = (ev) => {
+      this.closedCode = ev.code;
+      this.waiters = this.waiters.filter((w) => !w());
+    };
     this.opened = new Promise((res, rej) => {
       this.ws.onopen = res;
       this.ws.onerror = rej;
@@ -255,6 +259,27 @@ async function main() {
   host.send({ t: 'report' });
   await host.until((c) => c.report, 'report');
   check(host.report.rounds.length === 2 && host.report.rounds[0].entries.length === N, 'report has every text of both rounds');
+
+  // ---- the teacher's dashboard: status, report, keep playing, end the game ----
+  const info = await (await fetch(`${BASE}/api/rooms/${pin}`)).json();
+  check(info.players === host.view.players.length && info.round === 2, `status for My games: ${info.players} students, round ${info.round}`);
+  check((await fetch(`${BASE}/api/rooms/${pin}/report`)).status === 403, 'report over HTTP needs the host token');
+  const auth = { Authorization: `Bearer ${token}` };
+  const rep = await (await fetch(`${BASE}/api/rooms/${pin}/report`, { headers: auth })).json();
+  check(rep.rounds?.length === 2, 'report over HTTP with the host token');
+
+  const pointsBefore = host.view.teams.map((t) => t.points).join(',');
+  host.send({ t: 'queue', challenges: [challenge('c3', 'Third')] });
+  host.send({ t: 'next' });
+  await host.until((c) => c.view.phase === 'intro' && c.view.round === 3, 'round 3 after the final scores');
+  check(host.view.teams.map((t) => t.points).join(',') === pointsBefore, 'keep playing: same teams, points carry on');
+
+  check((await fetch(`${BASE}/api/rooms/${pin}`, { method: 'DELETE' })).status === 403, 'ending a game needs the host token');
+  const del = await fetch(`${BASE}/api/rooms/${pin}`, { method: 'DELETE', headers: auth });
+  check(del.status === 204, 'the teacher ends the game from My games');
+  await S.until((c) => c.closedCode === 4404, 'students sent out', 5000);
+  check(true, 'students are told the game ended');
+  check((await fetch(`${BASE}/api/rooms/${pin}`)).status === 404, 'the room is gone');
 
   for (const c of [host, late, ...students]) c.close();
   console.log(failures ? `\n${failures} check(s) failed` : '\nall checks passed');

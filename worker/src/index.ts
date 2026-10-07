@@ -26,7 +26,7 @@ export default {
       return Response.json({ error: 'No free game PIN, try again.' }, { status: 503 });
     }
 
-    const m = url.pathname.match(/^\/api\/rooms\/(\d{6})(?:\/ws)?$/);
+    const m = url.pathname.match(/^\/api\/rooms\/(\d{6})(?:\/ws|\/report)?$/);
     if (m) return env.ROOMS.get(env.ROOMS.idFromName(m[1])).fetch(req);
 
     if (url.pathname === '/api/health') return Response.json({ ok: true });

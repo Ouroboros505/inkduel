@@ -3,7 +3,7 @@ import { MAX_NAME } from '../../shared/protocol';
 import { navigate } from '../lib/nav';
 import { roomExists } from '../lib/room';
 import { K, load, save } from '../lib/store';
-import { Logo } from '../ui/bits';
+import { LogoLink } from '../ui/bits';
 
 export function Join() {
   const fromLink = new URLSearchParams(location.search).get('pin')?.replace(/\D/g, '').slice(0, 6) ?? '';
@@ -46,7 +46,15 @@ export function Join() {
 
   return (
     <main className="join">
-      <Logo size={44} />
+      <LogoLink
+        to="/"
+        size={44}
+        onGo={() => {
+          history.replaceState(null, '', '/');
+          setStep('pin');
+          setError('');
+        }}
+      />
       {step === 'pin' ? (
         <form
           className="join-card"

@@ -1,29 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DEFAULT_SETTINGS, type Challenge, type Settings } from '../../shared/protocol';
 import { mmss } from '../lib/clock';
 import { KINDS } from '../lib/library';
 import { navigate } from '../lib/nav';
-import { K, load, loadCustom, loadSettings, save, saveCustom, type GameIndexEntry, type HostCreds } from '../lib/store';
-import { fmtPin, Logo, Squiggle } from '../ui/bits';
+import { hostGames, K, load, loadCustom, loadSettings, save, saveCustom, type HostCreds } from '../lib/store';
+import { ChallengeArt, fmtPin } from '../ui/bits';
 import { ChallengeBrowser, ChallengePreview, readShared } from '../ui/challenges';
-
-const DAY = 24 * 3600_000;
-
-function recentGames(): { pin: string; createdAt: number }[] {
-  const out: { pin: string; createdAt: number }[] = [];
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i) ?? '';
-      const m = key.match(/^inkduel\.host\.(\d{6})$/);
-      if (!m) continue;
-      const creds = load<HostCreds | null>(key, null);
-      if (creds && Date.now() - creds.createdAt < DAY) out.push({ pin: m[1], createdAt: creds.createdAt });
-    }
-  } catch {
-    // storage blocked: nothing to resume
-  }
-  return out.sort((a, b) => b.createdAt - a.createdAt);
-}
+import { HostNav } from '../ui/hostnav';
 
 export function HostHome() {
   const [playlist, setPlaylist] = useState<Challenge[]>(() => load(K.playlist, []));
@@ -31,9 +14,8 @@ export function HostHome() {
   const [shared, setShared] = useState<Challenge | null>(() => readShared(location.hash));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [showSettings, setShowSettings] = useState(false);
-  const [games] = useState(() => load<GameIndexEntry[]>(K.games, []));
-  const live = useMemo(recentGames, []);
+  const [settingsKey, setSettingsKey] = useState(0);
+  const [live] = useState(hostGames);
 
   useEffect(() => void save(K.playlist, playlist), [playlist]);
   useEffect(() => void save(K.settings, settings), [settings]);
@@ -68,26 +50,28 @@ export function HostHome() {
   };
 
   const set = <K extends keyof Settings>(k: K, v: Settings[K]) => setSettings((s) => ({ ...s, [k]: v }));
+  const resetSettings = () => {
+    setSettings(DEFAULT_SETTINGS);
+    setSettingsKey((k) => k + 1);
+  };
 
   return (
     <div className="home">
-      <header className="home-top">
-        <a href="/" onClick={(e) => (e.preventDefault(), navigate('/'))}>
-          <Logo size={34} />
-        </a>
-        <p className="home-tag">
-          timed writing duels for your class. free, no student accounts.
-          <Squiggle />
-        </p>
-      </header>
+      <HostNav active="build" />
 
       {live.length > 0 && (
-        <div className="resume">
-          {live.map((g) => (
-            <button key={g.pin} className="btn" onClick={() => navigate(`/host/${g.pin}`)}>
-              Back to game {fmtPin(g.pin)} →
+        <div className="live-banner sticky">
+          <span>
+            🔴 {live.length === 1 ? `Game ${fmtPin(live[0].pin)} may still be running.` : `${live.length} games may still be running.`}
+          </span>
+          {live.length === 1 && (
+            <button className="btn btn-small btn-accent" onClick={() => navigate(`/host/${live[0].pin}`)}>
+              Back to the board ▸
             </button>
-          ))}
+          )}
+          <button className="btn btn-small" onClick={() => navigate('/host/games')}>
+            My games
+          </button>
         </div>
       )}
 
@@ -99,6 +83,7 @@ export function HostHome() {
               {playlist.map((c, i) => (
                 <li key={`${c.id}-${i}`}>
                   <span className="pl-n">{i + 1}</span>
+                  <ChallengeArt challenge={c} className="pl-art" thumb />
                   <span className="pl-body">
                     <b>{c.title}</b>
                     <small>
@@ -130,27 +115,20 @@ export function HostHome() {
           <button className="btn btn-accent btn-big wide" disabled={!playlist.length || busy} onClick={create}>
             {busy ? 'Opening the room…' : playlist.length ? `Start a game · ${playlist.length} round${playlist.length > 1 ? 's' : ''}` : 'Start a game'}
           </button>
+          {playlist.length > 0 && (
+            <button className="link-btn" onClick={() => setPlaylist([])}>
+              Clear the list
+            </button>
+          )}
           {error && <p className="error">{error}</p>}
 
-          <button className="link-btn" onClick={() => setShowSettings((x) => !x)}>
-            {showSettings ? '▾' : '▸'} Game settings
-          </button>
-          {showSettings && <SettingsForm settings={settings} set={set} />}
-
-          {games.length > 0 && (
-            <>
-              <h3>Past games on this computer</h3>
-              <ul className="past">
-                {games.slice(0, 8).map((g) => (
-                  <li key={`${g.pin}-${g.createdAt}`}>
-                    <a href={`/report/${g.pin}`} onClick={(e) => (e.preventDefault(), navigate(`/report/${g.pin}`))}>
-                      {new Date(g.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · {g.players} students · {g.titles.join(', ')}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+          <div className="settings-head">
+            <h3>Game settings</h3>
+            <button className="link-btn" onClick={resetSettings}>
+              Reset to defaults
+            </button>
+          </div>
+          <SettingsForm key={settingsKey} settings={settings} set={set} />
         </aside>
 
         <main className="library">
@@ -161,7 +139,7 @@ export function HostHome() {
       <footer className="home-foot">
         <p>
           Students join at <b>{location.host}</b> with the PIN on your board: no accounts, no emails. Their texts are deleted from the server a day after the
-          game; your report stays in this browser.
+          game; your reports stay in this browser, under My games.
         </p>
       </footer>
 

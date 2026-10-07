@@ -41,8 +41,9 @@ const DEFS: Def[] = [
   },
   {
     id: 'first-paragraph', kind: 'story', emoji: '🪝', levels: L('6-8', '9-10', '11-12'), seconds: 180,
+    image: '/img/girl-reading.jpg', credit: 'Jean-Honoré Fragonard, Young Girl Reading (c. 1769). Public domain.',
     title: 'Hook Me',
-    prompt: 'Write the first paragraph of a novel that nobody could put down. Any genre.',
+    prompt: "She hasn't looked up in an hour. Write the first paragraph of the novel she's reading: the kind nobody could put down. Any genre.",
     criterion: 'Hook', question: 'Which opening makes you most want to keep reading?',
     tips: ['Begin in the middle of something happening.', 'Give one specific, surprising detail.', 'Plant a question the reader needs answered.', 'Try opening with a line of dialogue.'],
   },
@@ -55,6 +56,7 @@ const DEFS: Def[] = [
   },
   {
     id: 'two-sides-door', kind: 'story', emoji: '🚪', levels: L('9-10', '11-12'), seconds: 300,
+    image: '/img/white-doors.jpg', credit: 'Vilhelm Hammershøi, White Doors (1899). Public domain.',
     title: 'Two Sides of a Door',
     prompt: 'Write the same moment twice: first from the person knocking, then from the person who will not open the door.',
     criterion: 'Point of view', question: 'Which text shows two points of view more convincingly?',
@@ -62,15 +64,17 @@ const DEFS: Def[] = [
   },
   {
     id: 'unsent-letter', kind: 'story', emoji: '✉️', levels: L('9-10', '11-12'), seconds: 240,
+    image: '/img/letter-blue.jpg', credit: 'Johannes Vermeer, Woman in Blue Reading a Letter (c. 1663). Public domain.',
     title: 'The Unsent Letter',
-    prompt: 'Write a letter that someone wrote but never sent. Who is it to, and why did it stay in the drawer?',
+    prompt: 'She is reading a letter. Write the one she wrote back and never sent. Who is it to, and why did it stay in the drawer?',
     criterion: 'Emotion', question: 'Which letter makes you feel more?',
     tips: ['Dear…', 'Start with something small and everyday.', 'Hint at the reason it was never sent.', 'End with the sentence that was hardest to write.'],
   },
   {
     id: 'villain-side', kind: 'story', emoji: '🐺', levels: L('6-8', '9-10'), seconds: 240,
+    image: '/img/red-riding.jpg', credit: 'Gustave Doré, Little Red Riding Hood (1862). Public domain.',
     title: "The Villain's Side",
-    prompt: 'Retell a fairy tale or a story everyone knows from the villain\'s point of view. Make us understand them.',
+    prompt: 'Retell a fairy tale everyone knows from the villain\'s point of view (this wolf is a good place to start). Make us understand them.',
     criterion: 'Sympathy', question: 'Which villain do you understand better?',
     tips: ['Nobody ever asks me why I…', 'What did the hero do that no one talks about?', 'Give the villain a reason, not an excuse.', 'Use first person: I, me, my.'],
   },
@@ -83,8 +87,9 @@ const DEFS: Def[] = [
   },
   {
     id: 'time-capsule', kind: 'story', emoji: '⏳', levels: L('6-8', '9-10'), seconds: 240,
+    image: '/img/golden-record.jpg', credit: 'NASA, The Sounds of Earth: the Voyager Golden Record (1977). Public domain.',
     title: 'Time Capsule',
-    prompt: 'In 2076, a student opens a time capsule your class buried today. Write what they find, and what they decide about us.',
+    prompt: 'In 1977 NASA sent this golden record into space for whoever finds it. Your class buries a time capsule today, and in 2076 a student opens it. Write what they find, and what they decide about us.',
     criterion: 'Insight', question: 'Which text says more about how we live now?',
     tips: ['List three objects in the capsule.', 'What would confuse someone from the future?', 'Write the future student\'s reaction in their own voice.', 'End with what they keep, and why.'],
   },
@@ -176,6 +181,7 @@ const DEFS: Def[] = [
   },
   {
     id: 'abandoned-place', kind: 'description', emoji: '🏚️', levels: L('9-10', '11-12'), seconds: 240,
+    image: '/img/desolation.jpg', credit: 'Thomas Cole, The Course of Empire: Desolation (1836). Public domain.',
     title: 'Something Happened Here',
     prompt: 'Describe a place where something important happened a long time ago. Never say what happened: let the details hint.',
     criterion: 'Show, don\'t tell', question: 'Which text hints best without telling?',
@@ -183,10 +189,53 @@ const DEFS: Def[] = [
   },
   {
     id: 'weather-mood', kind: 'description', emoji: '⛈️', levels: L('9-10'), seconds: 180,
+    image: '/img/snow-storm.jpg', credit: 'J. M. W. Turner, Snow Storm: Steam-Boat off a Harbour’s Mouth (1842). Public domain.',
     title: 'Weather Report',
     prompt: 'Describe a storm so that the weather shows how a character feels, without ever naming the feeling.',
     criterion: 'Mood', question: 'Which storm says more about the character?',
     tips: ['Is the storm coming, here, or passing?', 'Put the character somewhere specific.', 'Strong verbs: the wind ___ the windows.', 'Let the last line be calm, or not.'],
+  },
+
+  // ---- more picture prompts ----
+  {
+    id: 'icarus', kind: 'literature', levels: L('9-10', '11-12'), seconds: 300,
+    image: '/img/icarus.jpg', credit: 'After Pieter Bruegel the Elder, Landscape with the Fall of Icarus (c. 1560). Public domain.',
+    title: 'Nobody Looked Up',
+    prompt: 'Somewhere in this painting a boy falls out of the sky, and nobody looks up. Find him. Then write the scene from the point of view of someone who didn\'t notice.',
+    criterion: 'Point of view', question: 'Which text makes the moment matter more?',
+    tips: ['Look bottom right, near the ship.', 'Pick the ploughman, the shepherd or a sailor.', 'What are they busy with that feels more important?', 'Let the reader notice what your character misses.'],
+  },
+  {
+    id: 'sleeping-gypsy', kind: 'story', levels: L('6-8', '9-10'), seconds: 240,
+    image: '/img/sleeping-gypsy.jpg', credit: 'Henri Rousseau, The Sleeping Gypsy (1897). Public domain.',
+    title: 'The Lion and the Sleeper',
+    prompt: 'The lion has been standing over her for a long time. Write what happens when she wakes up.',
+    criterion: 'Surprise', question: 'Which ending surprised you more?',
+    tips: ['Who is she, and where was she going?', 'What does the lion want?', 'Use the moonlight and the silence.', 'Avoid the obvious ending.'],
+  },
+  {
+    id: 'cossacks', kind: 'wordplay', levels: L('9-10', '11-12'), seconds: 240,
+    image: '/img/cossacks.jpg', credit: 'Ilya Repin, Reply of the Zaporozhian Cossacks (1891). Public domain.',
+    title: 'The Rudest Polite Letter',
+    prompt: 'A sultan has ordered these Cossacks to surrender. They are writing back, and having the time of their lives. Write their reply: no swear words, only wit.',
+    criterion: 'Wit', question: 'Which letter is wittier?',
+    tips: ['To the so-called Sultan…', 'List his grand titles, then puncture them.', 'Polite words can carry rude meanings.', 'Sign off with a flourish.'],
+  },
+  {
+    id: 'air-pump', kind: 'story', levels: L('9-10', '11-12'), seconds: 240,
+    image: '/img/air-pump.jpg', credit: 'Joseph Wright of Derby, An Experiment on a Bird in the Air Pump (1768). Public domain.',
+    title: 'Everyone Is Watching',
+    prompt: 'A scientist is about to pump the air out of a glass jar with a bird inside. Every face in the room feels something different. Pick one person and write their thoughts.',
+    criterion: 'Character', question: 'Which character feels most real?',
+    tips: ['The girls covering their eyes, the boy at the window, the man with the watch…', 'What does your character want to happen?', 'Show the feeling through what they do.', 'End at the moment the scientist decides.'],
+  },
+  {
+    id: 'isle-dead', kind: 'description', levels: L('9-10', '11-12'), seconds: 240,
+    image: '/img/isle-dead.jpg', credit: 'Arnold Böcklin, Isle of the Dead (1883). Public domain.',
+    title: 'The Last Crossing',
+    prompt: 'The boat is almost at the island. Write the last five minutes of the crossing.',
+    criterion: 'Atmosphere', question: 'Which text has the stronger atmosphere?',
+    tips: ['Who is the figure in white?', 'Describe the water, the oars, the cypress trees.', 'What can\'t the passenger stop thinking about?', 'Never say where they are going.'],
   },
 
   // ---- arguments ----
@@ -236,6 +285,7 @@ const DEFS: Def[] = [
   // ---- poetry ----
   {
     id: 'ode-ordinary', kind: 'poetry', emoji: '🖊️', levels: L('6-8', '9-10'), seconds: 240,
+    image: '/img/shoes.jpg', credit: 'Vincent van Gogh, A Pair of Shoes (1886). Public domain.',
     title: 'Ode to Something Ordinary',
     prompt: 'Write an ode, a poem of praise, to an ordinary object you used today: a pencil, a backpack, a charger, a sock.',
     criterion: 'Imagery', question: 'Which poem makes the ordinary amazing?',
@@ -250,6 +300,7 @@ const DEFS: Def[] = [
   },
   {
     id: 'haiku-day', kind: 'poetry', emoji: '🍂', levels: L('6-8', '9-10', '11-12'), seconds: 240,
+    image: '/img/sudden-shower.jpg', credit: 'Utagawa Hiroshige, Sudden Shower over Shin-Ōhashi Bridge and Atake (1857). Public domain.',
     title: 'One Day in Three Haiku',
     prompt: 'Write three haiku (5-7-5 syllables) that together tell what happens in one day of one season: morning, noon and night.',
     criterion: 'Imagery', question: 'Which haiku paint the clearest pictures?',
@@ -264,6 +315,7 @@ const DEFS: Def[] = [
   },
   {
     id: 'blackout-lines', kind: 'poetry', emoji: '🌙', levels: L('11-12', '9-10'), seconds: 240,
+    image: '/img/starry-night.jpg', credit: 'Vincent van Gogh, The Starry Night (1889). Public domain.',
     title: 'What the Night Knows',
     prompt: 'Write a poem in which the night speaks to someone who cannot sleep. Give the night a personality.',
     criterion: 'Voice', question: 'Which night has the stronger personality?',
@@ -273,6 +325,7 @@ const DEFS: Def[] = [
   // ---- literature ----
   {
     id: 'fault-stars', kind: 'literature', emoji: '✨', levels: L('9-10', '11-12'), seconds: 240,
+    image: '/img/death-caesar.jpg', credit: 'Vincenzo Camuccini, The Death of Julius Caesar (1806). Public domain.',
     title: 'Not in Our Stars',
     prompt: '"The fault, dear Brutus, is not in our stars, but in ourselves." (Shakespeare, Julius Caesar). Agree or disagree, using an example from a book, a film or life.',
     criterion: 'Insight', question: 'Which text says something more thoughtful?',
@@ -303,6 +356,7 @@ const DEFS: Def[] = [
   // ---- reflection ----
   {
     id: 'small-moment', kind: 'reflection', emoji: '🌤️', levels: L('6-8', '9-10'), seconds: 240,
+    image: '/img/milkmaid.jpg', credit: 'Johannes Vermeer, The Milkmaid (c. 1658). Public domain.',
     title: 'A Small Moment',
     prompt: 'Write about a small moment that changed how a whole day went. Make the reader see it.',
     criterion: 'Detail', question: 'Which moment can you see most clearly?',

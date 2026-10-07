@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import type { Report, ReportEntry } from '../../shared/protocol';
 import { navigate } from '../lib/nav';
 import { K, load } from '../lib/store';
-import { fmtPin, Logo, plural, TeamBadge } from '../ui/bits';
+import { fmtPin, LogoLink, plural, TeamBadge } from '../ui/bits';
+import { HostNav } from '../ui/hostnav';
 
 const HELD: Record<string, string> = {
   empty: 'too short',
@@ -41,18 +42,27 @@ export function ReportPage({ pin }: { pin: string }) {
   if (!report)
     return (
       <main className="join">
-        <Logo size={40} />
+        <LogoLink to="/host" size={40} />
         <div className="join-card center">
           <h2>No report for game {fmtPin(pin)} on this computer</h2>
           <p className="muted">Reports are saved by the browser that ran the board, after every round.</p>
-          <button className="btn btn-accent" onClick={() => navigate('/host')}>
-            Back to InkDuel
-          </button>
+          <div className="row">
+            <button className="btn" onClick={() => navigate('/host/games')}>
+              My games
+            </button>
+            <button className="btn btn-accent" onClick={() => navigate('/host')}>
+              Back to InkDuel
+            </button>
+          </div>
         </div>
       </main>
     );
 
   const team = (id: number | null) => report.teams.find((t) => t.id === id);
+  const all = report.rounds.flatMap((r) => r.entries);
+  const texts = all.filter((e) => e.words > 0);
+  const words = texts.reduce((n, e) => n + e.words, 0);
+  const longest = [...texts].sort((a, b) => b.words - a.words)[0];
   const date = new Date(report.createdAt).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   const students = [...report.players].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -94,10 +104,13 @@ export function ReportPage({ pin }: { pin: string }) {
 
   return (
     <div className="report">
+      <div className="report-nav">
+        <HostNav active="report" />
+      </div>
+      <button className="link-btn back-link" onClick={() => navigate('/host/games')}>
+        ← back to My games
+      </button>
       <header className="report-top">
-        <a href="/host" onClick={(e) => (e.preventDefault(), navigate('/host'))}>
-          <Logo size={28} />
-        </a>
         <div className="report-title">
           <h1>Game report</h1>
           <p className="muted">
@@ -105,6 +118,24 @@ export function ReportPage({ pin }: { pin: string }) {
           </p>
         </div>
       </header>
+      <div className="stat-row compact">
+        <div className="stat">
+          <b>{texts.length}</b>
+          <span>texts</span>
+        </div>
+        <div className="stat">
+          <b>{words.toLocaleString()}</b>
+          <span>words</span>
+        </div>
+        <div className="stat">
+          <b>{texts.length ? Math.round(words / texts.length) : 0}</b>
+          <span>words a text</span>
+        </div>
+        <div className="stat">
+          <b>{longest?.words ?? 0}</b>
+          <span>longest text{longest ? ` (${longest.name})` : ''}</span>
+        </div>
+      </div>
 
       <div className="report-tools">
         <div className="browser-tabs">

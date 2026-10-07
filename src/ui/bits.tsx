@@ -4,6 +4,7 @@ import qrcode from 'qrcode-generator';
 import type { Challenge, Clock, TeamInfo } from '../../shared/protocol';
 import { mmss, remaining, useTick } from '../lib/clock';
 import { segments, type Mark as SpotMark } from '../lib/spotlight';
+import { navigate } from '../lib/nav';
 import { localImage } from '../lib/store';
 
 // The look: a risograph zine on a writer's desk. Fluorescent inks on cream paper, ink outlines
@@ -68,6 +69,28 @@ export function Logo({ size = 28, light = false }: { size?: number; light?: bool
         Ink<span>Duel</span>
       </span>
     </span>
+  );
+}
+
+/**
+ * The logo as the way home: the teacher home for teachers, the join page for students. `ask` is
+ * shown first when leaving would interrupt something; nothing is lost either way.
+ */
+export function LogoLink({ to, size = 28, light = false, mark = false, ask, onGo }: { to: string; size?: number; light?: boolean; mark?: boolean; ask?: string; onGo?: () => void }) {
+  return (
+    <a
+      href={to}
+      className="logo-link"
+      aria-label={to === '/' ? 'InkDuel: join a game' : 'InkDuel: teacher home'}
+      onClick={(e) => {
+        e.preventDefault();
+        if (ask && !confirm(ask)) return;
+        if (onGo) onGo();
+        else navigate(to);
+      }}
+    >
+      {mark ? <Nibs size={size} /> : <Logo size={size} light={light} />}
+    </a>
   );
 }
 
@@ -143,7 +166,7 @@ export function Qr({ text, size = 200 }: { text: string; size?: number }) {
   return <div className="qr" style={{ width: size, height: size }} dangerouslySetInnerHTML={{ __html: svg }} />;
 }
 
-export function Modal({ onClose, children, wide = false, label }: { onClose: () => void; children: ReactNode; wide?: boolean; label: string }) {
+export function Modal({ onClose, children, wide = false, label, back = 'Back' }: { onClose: () => void; children: ReactNode; wide?: boolean; label: string; back?: string }) {
   useEffect(() => {
     const key = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', key);
@@ -152,9 +175,12 @@ export function Modal({ onClose, children, wide = false, label }: { onClose: () 
   return createPortal(
     <div className="modal-back" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className={`modal${wide ? ' wide' : ''}`} role="dialog" aria-modal="true" aria-label={label}>
-        <button className="modal-x" onClick={onClose} aria-label="Close">
-          ×
-        </button>
+        <div className="modal-top">
+          <button className="btn btn-small" onClick={onClose}>
+            ← {back}
+          </button>
+          <span className="muted small">or press Esc</span>
+        </div>
         {children}
       </div>
     </div>,
@@ -182,10 +208,12 @@ export function Highlighted({ text, marks, color }: { text: string; marks?: Spot
  * A challenge's picture: her uploaded image or a shipped painting as a taped-down print, or,
  * without one, the emoji as a die-cut sticker on a halftone block of riso ink.
  */
-export function ChallengeArt({ challenge, className = '', polaroid = false }: { challenge: Challenge; className?: string; polaroid?: boolean }) {
+export function ChallengeArt({ challenge, className = '', polaroid = false, thumb = false }: { challenge: Challenge; className?: string; polaroid?: boolean; thumb?: boolean }) {
   // The server drops uploaded pictures, so a custom challenge coming back from the room has none:
   // fall back to the copy in this browser.
-  const src = challenge.image ?? (challenge.custom ? localImage(challenge.id) : undefined);
+  const full = challenge.image ?? (challenge.custom ? localImage(challenge.id) : undefined);
+  // Shipped paintings come in two sizes; small tiles load the thumbnail.
+  const src = thumb && full?.startsWith('/img/') ? full.replace('/img/', '/img/t/') : full;
   if (src)
     return (
       <figure className={`art${polaroid ? ' polaroid taped' : ''} ${className}`} style={{ '--rot': `${tilt(challenge.id, 2.5)}deg` } as CSSProperties}>

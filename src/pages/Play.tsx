@@ -5,7 +5,7 @@ import { useTimeUp, useWithin } from '../lib/clock';
 import { navigate } from '../lib/nav';
 import { useRoom, type Status } from '../lib/room';
 import { drop, K, load, save } from '../lib/store';
-import { ChallengeArt, Countdown, HelloSticker, Logo, plural, Stamp, TeamBadge, teamVars } from '../ui/bits';
+import { ChallengeArt, Countdown, HelloSticker, LogoLink, plural, Stamp, TeamBadge, teamVars } from '../ui/bits';
 
 type Send = (m: ClientMsg) => void;
 interface Creds {
@@ -94,7 +94,7 @@ export function Play({ pin }: { pin: string }) {
 function Notice({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
     <main className="join">
-      <Logo size={40} />
+      <LogoLink to="/" size={40} />
       <div className="join-card center">
         <h2>{title}</h2>
         {children}
@@ -107,7 +107,7 @@ function NameForm({ onJoin, error }: { onJoin: (name: string) => void; error: st
   const [name, setName] = useState('');
   return (
     <main className="join">
-      <Logo size={40} />
+      <LogoLink to="/" size={40} />
       <form
         className="join-card"
         onSubmit={(e) => {
@@ -131,7 +131,8 @@ function Game({ view, offset, send, status }: { view: PlayerView; offset: number
     <div className="play" style={teamVars(team)}>
       <header className="play-top">
         <span className="play-me">
-          {team ? <TeamBadge team={team} /> : <Logo size={22} />}
+          <LogoLink to="/" mark size={30} ask={view.phase === 'summary' ? undefined : 'Leave this game? You can get back in with the same PIN.'} />
+          {team && <TeamBadge team={team} />}
           <span className="play-name">{view.me.name}</span>
         </span>
         {status !== 'open' && <span className="conn">reconnecting…</span>}

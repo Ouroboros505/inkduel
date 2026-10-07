@@ -83,3 +83,44 @@ export function localImage(challengeId: string | undefined): string | undefined 
   if (!challengeId) return undefined;
   return loadCustom().find((c) => c.id === challengeId)?.image;
 }
+
+const DAY = 24 * 3600_000;
+
+/** Games this browser is hosting that may still be running: rooms live a day after their last activity. */
+export function hostGames(): { pin: string; token: string; createdAt: number }[] {
+  const out: { pin: string; token: string; createdAt: number }[] = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i) ?? '';
+      const m = key.match(/^inkduel\.host\.(\d{6})$/);
+      if (!m) continue;
+      const creds = load<HostCreds | null>(key, null);
+      if (creds && Date.now() - creds.createdAt < 2 * DAY) out.push({ pin: m[1], token: creds.token, createdAt: creds.createdAt });
+    }
+  } catch {
+    // storage blocked: nothing to list
+  }
+  return out.sort((a, b) => b.createdAt - a.createdAt);
+}
+
+export function forgetHost(pin: string) {
+  drop(K.host(pin));
+}
+
+export function loadGames(): GameIndexEntry[] {
+  return load<GameIndexEntry[]>(K.games, []);
+}
+
+export function loadReport(pin: string): Report | null {
+  return load<Report | null>(K.report(pin), null);
+}
+
+export function deleteGame(pin: string) {
+  drop(K.report(pin));
+  save(K.games, loadGames().filter((g) => g.pin !== pin));
+}
+
+export function clearGames() {
+  for (const g of loadGames()) drop(K.report(g.pin));
+  drop(K.games);
+}

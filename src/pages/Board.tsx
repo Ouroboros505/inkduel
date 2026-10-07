@@ -8,7 +8,7 @@ import { setMuted, sound } from '../lib/sound';
 import { spot, TECHNIQUES, type Technique } from '../lib/spotlight';
 import { K, load, localImage, save, saveReport, type HostCreds } from '../lib/store';
 import {
-  ChallengeArt, Countdown, fmtPin, HelloSticker, Highlighted, Logo, Modal, Nibs, plural, Qr, RISO, Squiggle, Stamp, TeamBadge, teamVars,
+  ChallengeArt, Countdown, fmtPin, HelloSticker, Highlighted, LogoLink, Modal, Nibs, plural, Qr, RISO, Squiggle, Stamp, TeamBadge, teamVars,
 } from '../ui/bits';
 import { ChallengeBrowser } from '../ui/challenges';
 import { SettingsForm } from './HostHome';
@@ -26,13 +26,18 @@ export function Board({ pin }: { pin: string }) {
 function NotHost({ pin }: { pin: string }) {
   return (
     <main className="join">
-      <Logo size={40} />
+      <LogoLink to="/host" size={40} />
       <div className="join-card center">
         <h2>This browser isn't running game {fmtPin(pin)}</h2>
         <p className="muted">Only the computer that started a game can show its board.</p>
-        <button className="btn btn-accent" onClick={() => navigate('/host')}>
-          Start a new game
-        </button>
+        <div className="row">
+          <button className="btn" onClick={() => navigate('/host/games')}>
+            My games
+          </button>
+          <button className="btn btn-accent" onClick={() => navigate('/host')}>
+            Start a new game
+          </button>
+        </div>
       </div>
     </main>
   );
@@ -76,6 +81,14 @@ function BoardLive({ pin, token }: { pin: string; token: string }) {
     if (view?.phase !== 'finals') setReader(null);
   }, [view?.phase]);
 
+  // Confetti draws on its own page-wide canvas; stop it when leaving the board.
+  useEffect(
+    () => () => {
+      confetti.reset();
+    },
+    [],
+  );
+
   useBoardSounds(view, offset);
   const hurry = useWithin(view?.clock, offset, 20_000) && view?.phase === 'writing';
 
@@ -83,20 +96,25 @@ function BoardLive({ pin, token }: { pin: string; token: string }) {
   if (status === 'gone')
     return (
       <main className="join">
-        <Logo size={40} />
+        <LogoLink to="/host" size={40} />
         <div className="join-card center">
           <h2>This game has ended</h2>
           <p className="muted">Rooms are deleted a day after the last activity.</p>
-          <button className="btn btn-accent" onClick={() => navigate(`/report/${pin}`)}>
-            Open the saved report
-          </button>
+          <div className="row">
+            <button className="btn" onClick={() => navigate('/host/games')}>
+              My games
+            </button>
+            <button className="btn btn-accent" onClick={() => navigate(`/report/${pin}`)}>
+              Open the saved report
+            </button>
+          </div>
         </div>
       </main>
     );
   if (!view)
     return (
       <main className="join">
-        <Logo size={40} />
+        <LogoLink to="/host" size={40} />
         <p className="hand-note">{status === 'retrying' ? 'Reconnecting to the game…' : 'Opening the board…'}</p>
       </main>
     );
@@ -107,7 +125,15 @@ function BoardLive({ pin, token }: { pin: string; token: string }) {
   return (
     <div className={`board phase-${view.phase}${hurry ? ' hurry' : ''}`}>
       <header className="board-top">
-        <Logo size={26} light />
+        <button
+          className="btn btn-small board-back"
+          onClick={() =>
+            (view.phase === 'summary' || confirm('Leave the board? The game keeps running, and you can come back to it from My games.')) && navigate('/host/games')
+          }
+        >
+          ← My games
+        </button>
+        <LogoLink to="/host" size={26} light ask={view.phase === 'summary' ? undefined : 'Leave the board for the teacher home? The game keeps running, and you can come back to it from My games.'} />
         {view.phase !== 'lobby' && view.phase !== 'summary' && (
           <span className="board-join">
             Join at <b>{location.host}</b> · PIN <b>{fmtPin(view.pin)}</b>
@@ -268,7 +294,7 @@ function Lobby({ view, send }: { view: HostView; send: Send }) {
         )}
         {next && (
           <div className="up-next card">
-            <ChallengeArt challenge={next} className="up-next-art" />
+            <ChallengeArt challenge={next} className="up-next-art" thumb />
             <div>
               <span className="eyebrow">First challenge</span>
               <b>{next.title}</b>
@@ -797,18 +823,37 @@ function Controls({ view, send, offset, openPicker }: { view: HostView; send: Se
         </>
       );
     }
-    case 'summary':
+    case 'summary': {
+      const next = view.queue[0];
       return (
         <>
+          <button className="btn" onClick={() => navigate('/host/games')}>
+            ← My games
+          </button>
           <button className="btn" onClick={() => navigate('/host')}>
             New game
           </button>
           <span className="spacer" />
-          <button className="btn btn-accent btn-big" onClick={() => window.open(`/report/${view.pin}`, '_blank')}>
-            Open the teacher report ▸
+          {next ? (
+            <>
+              <span className="next-up">
+                next up: <b>{next.title}</b>
+              </span>
+              <button className="btn" onClick={() => send({ t: 'next' })}>
+                Keep playing ▸
+              </button>
+            </>
+          ) : (
+            <button className="btn" onClick={() => openPicker('next')} title="Same class, same teams: the points carry on">
+              Keep playing with this class
+            </button>
+          )}
+          <button className="btn btn-accent btn-big" onClick={() => navigate(`/report/${view.pin}`)}>
+            Teacher report ▸
           </button>
         </>
       );
+    }
   }
 }
 

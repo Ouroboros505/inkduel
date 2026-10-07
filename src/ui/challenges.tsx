@@ -7,6 +7,21 @@ import { ChallengeArt, Modal, Stamp } from './bits';
 
 const LEVEL_KEY = 'inkduel.level';
 
+/**
+ * The library's order: paintings first (the first six all paintings), then two paintings to
+ * every emoji challenge, so the picture prompts lead and the rest stay mixed in.
+ */
+function artFirst(list: Challenge[]): Challenge[] {
+  const art = list.filter((c) => c.image);
+  const plain = list.filter((c) => !c.image);
+  const out = art.splice(0, 6);
+  while (art.length || plain.length) {
+    out.push(...art.splice(0, 2));
+    if (plain.length) out.push(plain.shift()!);
+  }
+  return out;
+}
+
 export function levelText(levels: Level[]) {
   if (levels.length === 3 || !levels.length) return 'All grades';
   const sorted = LEVELS.filter((l) => levels.includes(l.id)).map((l) => l.id);
@@ -18,7 +33,7 @@ export function levelText(levels: Level[]) {
 function ChallengeTile({ c, onOpen, chosen }: { c: Challenge; onOpen: () => void; chosen: boolean }) {
   return (
     <button className={`tile${chosen ? ' chosen' : ''}`} onClick={onOpen}>
-      <ChallengeArt challenge={c} className="tile-art" />
+      <ChallengeArt challenge={c} className="tile-art" thumb />
       <span className="tile-body">
         <span className="tile-kind">
           {KINDS[c.kind]?.emoji} {KINDS[c.kind]?.label ?? 'Challenge'}
@@ -48,7 +63,7 @@ function ChallengeTile({ c, onOpen, chosen }: { c: Challenge; onOpen: () => void
 export function ChallengeBrowser({ onPick, pickLabel, chosen = [] }: { onPick: (c: Challenge) => void; pickLabel: string; chosen?: string[] }) {
   const [tab, setTab] = useState<'library' | 'mine'>('library');
   const [level, setLevel] = useState<Level | 'all'>(() => load(LEVEL_KEY, '9-10'));
-  const [kind, setKind] = useState<Kind | 'all'>('all');
+  const [kind, setKind] = useState<Kind | 'all' | 'pictures'>('all');
   const [q, setQ] = useState('');
   const [custom, setCustom] = useState(loadCustom);
   const [open, setOpen] = useState<Challenge | null>(null);
@@ -57,12 +72,12 @@ export function ChallengeBrowser({ onPick, pickLabel, chosen = [] }: { onPick: (
   const importRef = useRef<HTMLInputElement>(null);
 
   const list = useMemo(() => {
-    const src = tab === 'mine' ? custom : LIBRARY;
+    const src = tab === 'mine' ? custom : artFirst(LIBRARY);
     const needle = q.trim().toLowerCase();
     return src.filter(
       (c) =>
         (level === 'all' || c.levels.includes(level) || !c.levels.length) &&
-        (kind === 'all' || c.kind === kind) &&
+        (kind === 'all' || (kind === 'pictures' ? !!c.image : c.kind === kind)) &&
         (!needle || `${c.title} ${c.prompt} ${c.criterion}`.toLowerCase().includes(needle)),
     );
   }, [tab, custom, level, kind, q]);
@@ -77,12 +92,14 @@ export function ChallengeBrowser({ onPick, pickLabel, chosen = [] }: { onPick: (
     if (!saveCustom(next)) setNote('This browser is out of storage space: try a smaller picture.');
   };
 
-  const saveEdited = (c: Challenge) => {
+  // Saving goes straight back to the library, with the new challenge first under My challenges.
+  const saveEdited = (c: Challenge, pick: boolean) => {
     const next = custom.some((x) => x.id === c.id) ? custom.map((x) => (x.id === c.id ? c : x)) : [c, ...custom];
     store(next);
     setEditing(null);
-    setOpen(c);
     setTab('mine');
+    if (pick) onPick(c);
+    setNote(`Saved “${c.title}” in My challenges${pick ? ' and added it to your game' : ''}.`);
   };
 
   const remove = (c: Challenge) => {
@@ -141,6 +158,9 @@ export function ChallengeBrowser({ onPick, pickLabel, chosen = [] }: { onPick: (
           <button className={`chip-btn${kind === 'all' ? ' on' : ''}`} onClick={() => setKind('all')}>
             Every type
           </button>
+          <button className={`chip-btn${kind === 'pictures' ? ' on' : ''}`} onClick={() => setKind('pictures')}>
+            🖼️ Paintings
+          </button>
           {(Object.keys(KINDS) as Kind[]).map((k) => (
             <button key={k} className={`chip-btn${kind === k ? ' on' : ''}`} onClick={() => setKind(k)}>
               {KINDS[k].emoji} {KINDS[k].label}
@@ -151,8 +171,8 @@ export function ChallengeBrowser({ onPick, pickLabel, chosen = [] }: { onPick: (
       </div>
 
       {note && (
-        <p className="note" onClick={() => setNote('')}>
-          {note}
+        <p className="note saved" onClick={() => setNote('')} role="status">
+          ✓ {note} <span className="muted small">(tap to hide)</span>
         </p>
       )}
 
@@ -198,7 +218,7 @@ export function ChallengeBrowser({ onPick, pickLabel, chosen = [] }: { onPick: (
           onClose={() => setOpen(null)}
         />
       )}
-      {editing && <ChallengeEditor initial={editing} onSave={saveEdited} onClose={() => setEditing(null)} />}
+      {editing && <ChallengeEditor initial={editing} pickLabel={pickLabel} onSave={saveEdited} onClose={() => setEditing(null)} />}
     </div>
   );
 }
@@ -246,7 +266,7 @@ export function ChallengePreview({
     }
   };
   return (
-    <Modal onClose={onClose} label={c.title}>
+    <Modal onClose={onClose} label={c.title} back="Back to the library">
       <div className="preview">
         <ChallengeArt challenge={c} className="preview-art" polaroid />
         <div className="preview-body">
@@ -324,26 +344,36 @@ async function shrinkImage(file: File): Promise<string> {
 
 const TIMES = [60, 90, 120, 150, 180, 240, 300, 360, 420, 480, 600];
 
-export function ChallengeEditor({ initial, onSave, onClose }: { initial: Challenge; onSave: (c: Challenge) => void; onClose: () => void }) {
+export function ChallengeEditor({
+  initial, pickLabel, onSave, onClose,
+}: {
+  initial: Challenge;
+  pickLabel: string;
+  onSave: (c: Challenge, pick: boolean) => void;
+  onClose: () => void;
+}) {
   const [c, setC] = useState<Challenge>({ ...initial, tips: [...initial.tips, '', '', '', ''].slice(0, 4) });
   const [err, setErr] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const set = <K extends keyof Challenge>(k: K, v: Challenge[K]) => setC((x) => ({ ...x, [k]: v }));
 
-  const submit = (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent, pick = false) => {
     e.preventDefault();
     if (!c.title.trim() || !c.prompt.trim()) return setErr('A challenge needs a title and a prompt.');
     if (!c.levels.length) return setErr('Pick at least one grade level.');
     const criterion = c.criterion.trim() || 'Best writing';
-    onSave({
-      ...c,
-      title: c.title.trim(),
-      prompt: c.prompt.trim(),
-      criterion,
-      question: c.question.trim() || `Which text wins for ${criterion.toLowerCase()}?`,
-      tips: c.tips.map((t) => t.trim()).filter(Boolean),
-      custom: true,
-    });
+    onSave(
+      {
+        ...c,
+        title: c.title.trim(),
+        prompt: c.prompt.trim(),
+        criterion,
+        question: c.question.trim() || `Which text wins for ${criterion.toLowerCase()}?`,
+        tips: c.tips.map((t) => t.trim()).filter(Boolean),
+        custom: true,
+      },
+      pick,
+    );
   };
 
   const upload = async (file: File) => {
@@ -356,7 +386,7 @@ export function ChallengeEditor({ initial, onSave, onClose }: { initial: Challen
   };
 
   return (
-    <Modal onClose={onClose} label="Edit challenge" wide>
+    <Modal onClose={onClose} label="Edit challenge" wide back="Back without saving">
       <form className="editor" onSubmit={submit}>
         <h2>{initial.title ? 'Edit challenge' : 'Write your own challenge'}</h2>
         <div className="editor-grid">
@@ -466,7 +496,10 @@ export function ChallengeEditor({ initial, onSave, onClose }: { initial: Challen
           <button type="button" className="btn btn-ghost" onClick={onClose}>
             Cancel
           </button>
-          <button className="btn btn-accent">Save challenge</button>
+          <button className="btn">Save</button>
+          <button type="button" className="btn btn-accent" onClick={(e) => submit(e, true)}>
+            Save & {pickLabel.toLowerCase()}
+          </button>
         </div>
         <p className="muted small">Your challenges and pictures are saved in this browser only. Use "Download my challenges" to move them to another computer.</p>
       </form>

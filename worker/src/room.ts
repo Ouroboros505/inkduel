@@ -187,7 +187,33 @@ export class Room extends DurableObject<Env> {
       return new Response(null, { status: 101, webSocket: pair[0] });
     }
     if (!this.s) return Response.json({ ok: false }, { status: 404 });
-    return Response.json({ ok: true, phase: this.s.phase, locked: this.s.locked });
+    // The teacher's dashboard: her host token proves the game is hers.
+    const isHost = req.headers.get('Authorization') === `Bearer ${this.s.token}`;
+    if (url.pathname.endsWith('/report')) {
+      if (!isHost) return Response.json({ ok: false }, { status: 403 });
+      return Response.json(this.report());
+    }
+    if (req.method === 'DELETE') {
+      if (!isHost) return Response.json({ ok: false }, { status: 403 });
+      for (const ws of this.ctx.getWebSockets()) {
+        this.send(ws, { t: 'error', code: 'gone', message: 'Your teacher ended this game.' });
+        ws.close(4404, 'ended');
+      }
+      await this.ctx.storage.deleteAll();
+      await this.ctx.storage.deleteAlarm();
+      this.s = null;
+      this.rounds = [];
+      return new Response(null, { status: 204 });
+    }
+    return Response.json({
+      ok: true,
+      phase: this.s.phase,
+      locked: this.s.locked,
+      players: this.s.players.length,
+      round: this.s.round,
+      rounds: this.s.round + this.s.queue.length,
+      createdAt: this.s.createdAt,
+    });
   }
 
   async webSocketMessage(ws: WebSocket, raw: string | ArrayBuffer) {
@@ -518,7 +544,8 @@ export class Room extends DurableObject<Env> {
         break;
       }
       case 'next':
-        if (s.phase !== 'results') return;
+        // From the final scores too: the same class keeps playing, points carry on.
+        if (s.phase !== 'results' && s.phase !== 'summary') return;
         if (!s.queue.length) return this.fail(ws, 'no-challenge', 'Pick the next challenge first.');
         this.newRound();
         break;
