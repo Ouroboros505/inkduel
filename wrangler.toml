@@ -1,0 +1,9 @@
+# Cloudflare Pages configuration for the site (npm run deploy:web). The game rooms are a separate
+# Worker, worker/wrangler.toml; /api reaches it through this service binding.
+name = "inkduel"
+compatibility_date = "2025-09-01"
+pages_build_output_dir = "dist"
+
+[[services]]
+binding = "API"
+service = "inkduel-rooms"

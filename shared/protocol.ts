@@ -60,11 +60,12 @@ export const DEFAULT_SETTINGS: Settings = {
   blocked: [],
 };
 
+// Risograph ink colours: orange, violet, teal, blue.
 export const TEAM_STYLES = [
-  { name: 'Foxes', emoji: '🦊', color: '#E4572E' },
-  { name: 'Owls', emoji: '🦉', color: '#7B5CD6' },
-  { name: 'Otters', emoji: '🦦', color: '#0E9F8E' },
-  { name: 'Wolves', emoji: '🐺', color: '#2F6FD0' },
+  { name: 'Foxes', emoji: '🦊', color: '#ff6b35' },
+  { name: 'Owls', emoji: '🦉', color: '#7a4fd6' },
+  { name: 'Otters', emoji: '🦦', color: '#00a3a3' },
+  { name: 'Wolves', emoji: '🐺', color: '#2f62e0' },
 ] as const;
 
 export interface TeamInfo {

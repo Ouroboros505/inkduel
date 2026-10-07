@@ -138,6 +138,8 @@ export class Room extends DurableObject<Env> {
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
+    // Keep-alive pings from the browsers are answered without waking the room.
+    ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));
     ctx.blockConcurrencyWhile(async () => {
       this.s = (await ctx.storage.get<State>('state')) ?? null;
       if (this.s) {
