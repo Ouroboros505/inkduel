@@ -136,7 +136,10 @@ function BoardLive({ pin, token }: { pin: string; token: string }) {
         <LogoLink to="/host" size={26} light ask={view.phase === 'summary' ? undefined : 'Leave the board for the teacher home? The game keeps running, and you can come back to it from My games.'} />
         {view.phase !== 'lobby' && view.phase !== 'summary' && (
           <span className="board-join">
-            Join at <b>{location.host}</b> · PIN <b>{fmtPin(view.pin)}</b>
+            <span className="board-join-host">
+              Join at <b>{location.host}</b> ·{' '}
+            </span>
+            PIN <b>{fmtPin(view.pin)}</b>
           </span>
         )}
         <span className="spacer" />
@@ -159,7 +162,8 @@ function BoardLive({ pin, token }: { pin: string; token: string }) {
           ⛶
         </button>
         <button className={`btn btn-small${panel ? ' on' : ''}`} onClick={() => setPanel((p) => !p)}>
-          Teacher panel
+          <span className="hide-m">Teacher panel</span>
+          <span className="show-m">☰ Panel</span>
         </button>
       </header>
 

@@ -1336,7 +1336,7 @@ button:disabled {
   height: var(--lh);
   line-height: var(--lh);
 }
-.game-panel > .empty {
+.gp-game > .empty {
   font-family: var(--hand);
   font-size: 1.45rem;
   font-weight: 650;
@@ -1345,10 +1345,10 @@ button:disabled {
   padding: 0;
   margin: 0;
 }
-.game-panel > .btn {
+.gp-game > .btn {
   margin: 0.9em 0 0.6em;
 }
-.game-panel > .link-btn {
+.gp-game > .link-btn {
   align-self: flex-start;
 }
 .game-panel .settings {
@@ -3500,7 +3500,7 @@ button:disabled {
 .chart h3 {
   margin: 0 0 0.6rem;
 }
-.bars {
+.gchart-bars {
   display: flex;
   align-items: flex-end;
   gap: 0.7rem;
@@ -3508,7 +3508,7 @@ button:disabled {
   border-bottom: 2.5px solid var(--ink);
   padding-top: 1.4rem;
 }
-.bar-col {
+.gchart-col {
   flex: 1;
   height: 100%;
   display: flex;
@@ -3518,7 +3518,7 @@ button:disabled {
   position: relative;
   min-width: 0;
 }
-.bar {
+.gchart-bar {
   width: 100%;
   max-width: 3.2rem;
   min-height: 4px;
@@ -3531,25 +3531,25 @@ button:disabled {
   animation: rise 0.8s cubic-bezier(0.2, 1.2, 0.4, 1) both;
   transform-origin: bottom;
 }
-.bar-col:nth-child(3n + 2) .bar {
+.gchart-col:nth-child(3n + 2) .gchart-bar {
   background-color: var(--blue);
 }
-.bar-col:nth-child(3n + 3) .bar {
+.gchart-col:nth-child(3n + 3) .gchart-bar {
   background-color: var(--teal);
 }
-.bar-n {
+.gchart-n {
   font-family: var(--display);
   font-weight: 800;
   font-size: 0.8rem;
 }
-.bar-date {
+.gchart-date {
   position: absolute;
   bottom: -1.5rem;
   font-size: 0.72rem;
   color: var(--ink-2);
   white-space: nowrap;
 }
-.chart .bars {
+.chart .gchart-bars {
   margin-bottom: 1.6rem;
 }
 .favs {
@@ -3646,4 +3646,580 @@ button:disabled {
   padding: 3px;
   box-shadow: 2px 2px 0 var(--ink);
   flex: none;
+}
+
+/* ---- phones and small tablets: the teacher pages become an app ----
+   One section per screen (Library, Your game, Settings, My games) behind a tab bar under the
+   thumb, a bar that keeps Start in reach, swipeable filter chips, challenge rows instead of
+   cards, and dialogs as full-screen sheets. Everything here is inside media queries: the
+   desktop layout is untouched. */
+.m-tabs,
+.m-startbar,
+.m-add {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .home,
+  .report {
+    padding: 0.8rem 1rem calc(8rem + env(safe-area-inset-bottom));
+  }
+  .home-top {
+    gap: 0.3rem 0.8rem;
+    margin-bottom: 0.9rem;
+  }
+  .home-top .logo {
+    font-size: 25px !important;
+  }
+  .home-tag {
+    font-size: 1.08rem;
+    line-height: 1.1;
+    transform: none;
+  }
+  .home-tag .squiggle {
+    display: none;
+  }
+  .host-nav {
+    display: none;
+  }
+  .live-banner {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+  .home-foot {
+    display: none;
+  }
+
+  /* one section at a time */
+  .home-grid {
+    display: block;
+  }
+  .game-panel {
+    position: static;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .m-library .game-panel,
+  .m-game .library,
+  .m-settings .library,
+  .m-game .gp-settings,
+  .m-settings .gp-game {
+    display: none;
+  }
+  .m-settings .settings-head {
+    margin-top: 0;
+    height: var(--lh);
+  }
+  .m-add {
+    display: flex;
+    width: 100%;
+    margin: 0.4rem 0 0.8rem;
+  }
+
+  /* the tab bar */
+  .m-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.25rem;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    background: var(--card);
+    border-top: 3px solid var(--ink);
+    padding: 0.35rem 0.35rem calc(0.4rem + env(safe-area-inset-bottom));
+  }
+  .m-tabs button {
+    border: 0;
+    background: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.05rem;
+    font-family: var(--display);
+    font-weight: 750;
+    font-size: 0.76rem;
+    padding: 0.3rem 0.15rem 0.35rem;
+    border-radius: 12px;
+    position: relative;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .m-tabs button span {
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+  .m-tabs button.on {
+    background: var(--yellow);
+    color: var(--ink);
+    box-shadow: inset 0 0 0 2px var(--ink);
+  }
+  .m-badge {
+    position: absolute;
+    top: 0.05rem;
+    left: calc(50% + 0.55rem);
+    font-style: normal;
+    font-family: var(--ui);
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: var(--pink);
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    display: grid;
+    place-items: center;
+    padding: 0 0.25rem;
+  }
+  .m-badge.live {
+    background: var(--red);
+    color: #fff;
+  }
+
+  /* Start, always in reach while browsing */
+  .m-startbar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    position: fixed;
+    left: 0.6rem;
+    right: 0.6rem;
+    bottom: calc(4.5rem + env(safe-area-inset-bottom));
+    z-index: 19;
+    background: var(--yellow);
+    border: var(--border);
+    border-radius: 14px;
+    box-shadow: var(--hard-sm);
+    padding: 0.4rem 0.45rem 0.4rem 0.8rem;
+    animation: pop 0.3s cubic-bezier(0.2, 1.5, 0.4, 1);
+  }
+  .m-startbar-info {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 0.98rem;
+    padding: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .m-startbar-info span {
+    color: var(--ink-2);
+    font-size: 0.85em;
+  }
+
+  /* the library: swipeable chips, full-width search, rows instead of cards */
+  .browser-tabs .spacer {
+    display: none;
+  }
+  .browser-tabs > .btn {
+    width: 100%;
+    margin-top: 0.45rem;
+    font-size: 0.98rem;
+    padding: 0.6em;
+  }
+  .browser-tabs > button:not(.btn) {
+    font-size: 1.02rem;
+    padding: 0.3rem 0.7rem;
+  }
+  .filters {
+    margin: 0.8rem -1rem 1rem;
+    gap: 0.4rem;
+  }
+  .chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 0.15rem 1rem 0.4rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(90deg, #000 88%, transparent);
+  }
+  .chips::-webkit-scrollbar {
+    display: none;
+  }
+  .chip-btn {
+    flex: none;
+  }
+  .search {
+    margin: 0.15rem 1rem 0;
+    max-width: none;
+    width: calc(100% - 2rem);
+  }
+  .mine-tools {
+    flex-wrap: wrap;
+  }
+  .tiles {
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+  .tile {
+    flex-direction: row;
+    min-height: 8.4rem;
+  }
+  .tile:hover {
+    transform: none;
+    box-shadow: var(--hard);
+  }
+  .tile-art,
+  .tile-art.art-emoji,
+  .tile-art:not(.art-emoji) {
+    aspect-ratio: auto;
+    width: 36%;
+    max-width: 9.5rem;
+    flex: none;
+    border-bottom: 0;
+    border-right: var(--border);
+  }
+  .tile-art img {
+    position: absolute;
+    inset: 0;
+  }
+  .tile-art.art-emoji span {
+    font-size: 2.5rem;
+  }
+  .tile-body {
+    padding: 0.6rem 0.75rem 0.7rem;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+  .tile-kind {
+    font-size: 0.68rem;
+  }
+  .tile-title {
+    font-size: 1.12rem;
+  }
+  .tile-prompt {
+    -webkit-line-clamp: 2;
+    font-size: 0.86rem;
+  }
+  .tile-meta {
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    font-size: 0.74rem;
+  }
+  .tile-check {
+    top: auto;
+    bottom: 0.5rem;
+    right: 0.55rem;
+    font-size: 0.78rem;
+  }
+
+  /* My games and the report */
+  .games-page .section-title {
+    font-size: 1.5rem;
+  }
+  .live-pin {
+    font-size: 2.4rem;
+  }
+  .stat b {
+    font-size: 1.7rem;
+  }
+  .gchart-bars {
+    height: 140px;
+    gap: 0.4rem;
+  }
+  .report-title h1 {
+    font-size: 1.7rem;
+  }
+  .report-nav .home-top {
+    margin-bottom: 0.2rem;
+  }
+}
+
+/* dialogs become full-screen sheets: the way back pinned on top, the main action at the bottom */
+@media (max-width: 700px) {
+  .modal-back {
+    padding: 0;
+    place-items: stretch;
+  }
+  .modal,
+  .modal.wide {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0 1rem 1rem;
+    animation: sheet 0.25s ease;
+  }
+  .modal-top {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: var(--paper);
+    margin: 0 -1rem 0.9rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 2px dashed var(--line);
+  }
+  .modal-top .muted {
+    display: none;
+  }
+  .preview {
+    gap: 0.8rem;
+  }
+  .preview-art {
+    max-width: 16rem;
+    margin: 0.5rem auto 0;
+  }
+  .preview-art.polaroid img {
+    max-height: 32vh;
+    object-fit: contain;
+  }
+  .preview-art.art-emoji {
+    aspect-ratio: 4 / 3;
+    width: 70%;
+  }
+  .preview-art.art-emoji span {
+    font-size: 5rem;
+  }
+  .preview-body h2 {
+    font-size: 1.9rem;
+  }
+  .preview-body > .row {
+    position: sticky;
+    bottom: -1rem;
+    z-index: 3;
+    background-color: var(--paper);
+    margin: 0 -1rem;
+    padding: 0.75rem 1rem calc(0.8rem + env(safe-area-inset-bottom));
+    border-top: 2px dashed var(--line);
+  }
+  .preview-body > .row .btn-accent {
+    flex: 1 1 100%;
+    font-size: 1.05rem;
+    padding: 0.7em;
+  }
+  .editor > .row.end {
+    bottom: -1rem;
+    margin: 0 -1rem;
+    padding: 0.75rem 1rem calc(0.8rem + env(safe-area-inset-bottom));
+    flex-wrap: wrap;
+  }
+  .editor > .row.end .btn-accent {
+    flex: 1 1 100%;
+    order: -1;
+  }
+  .editor .two {
+    grid-template-columns: 1fr;
+  }
+  .editor h2 {
+    font-size: 1.6rem;
+  }
+  @keyframes sheet {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+  }
+}
+
+/* Small thumbnails are too small for a painting's credit line. */
+.pl-art figcaption,
+.up-next-art figcaption {
+  display: none;
+}
+.pl-body small {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 900px) {
+  .tile-check {
+    top: 0.45rem;
+    bottom: auto;
+  }
+}
+
+/* ---- the board on a phone or small tablet: stacked, nothing wider than the screen, and the
+   next action pinned to the bottom. The projector layout above is untouched. */
+@media (max-width: 760px) {
+  .board {
+    grid-template-columns: minmax(0, 1fr);
+    overflow-x: clip;
+  }
+  .board-top {
+    flex-wrap: wrap;
+    gap: 0.5em 0.7em;
+    padding: 0.55em 0.9em;
+  }
+  .board-round,
+  .board-top .icon-btn[title='Full screen'] {
+    display: none;
+  }
+  .board-join {
+    order: 5;
+    flex-basis: 100%;
+    text-align: center;
+  }
+  .board-stage {
+    padding: 1em 1em 1.2em;
+  }
+  .board-controls {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    padding: 0.6em 0.8em calc(0.6em + env(safe-area-inset-bottom));
+  }
+  .board-controls .spacer {
+    display: none;
+  }
+  .board-controls .btn-big {
+    flex: 1 1 100%;
+    order: 9;
+  }
+  .lobby-head {
+    font-size: 2.6em;
+  }
+  .lobby-qr {
+    flex-wrap: wrap;
+  }
+  .sticker-wall {
+    overflow: visible;
+  }
+  .board-title {
+    font-size: 2.4em;
+    overflow-wrap: anywhere;
+  }
+  .board-title.small {
+    font-size: 1.9em;
+  }
+  .board-prompt,
+  .prompt-sheet .board-prompt {
+    font-size: 1.3em;
+  }
+  .prompt-row {
+    flex-direction: column;
+  }
+  .prompt-pic {
+    width: 70%;
+    max-width: none;
+    align-self: center;
+  }
+  .writing-right .countdown,
+  .duel-side .countdown {
+    width: 10em !important;
+    height: 10em !important;
+  }
+  .writing-right .countdown-text,
+  .duel-side .countdown-text {
+    font-size: 2.6em !important;
+  }
+  .duel-title {
+    font-size: 3.6em;
+  }
+  .row-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .rbar {
+    flex-wrap: wrap;
+  }
+  .rbar-track {
+    flex: 1 1 8em;
+  }
+  .results-head {
+    flex-wrap: wrap;
+  }
+  .winning-text .card-text {
+    padding-right: 0;
+    padding-bottom: 3.2em;
+  }
+  .step {
+    width: 30%;
+  }
+  .step-emoji {
+    font-size: 2.6em;
+  }
+  .summary-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .reader-text {
+    font-size: 1.35em;
+    padding: 0.4em 0.8em 1em calc(var(--mx) + 0.5em);
+  }
+  .reader-page {
+    padding: 1em 0.6em;
+  }
+  .reader > footer {
+    flex-wrap: wrap;
+  }
+  .tech-chips {
+    order: -1;
+    flex-basis: 100%;
+  }
+}
+@media (max-width: 760px) {
+  .board-top {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .board-top::-webkit-scrollbar {
+    display: none;
+  }
+  .board-top > * {
+    flex: none;
+  }
+  .board-top .logo-word {
+    display: none;
+  }
+  .board-top .spacer {
+    flex: 1;
+  }
+  .board-join {
+    order: 0;
+    flex-basis: auto;
+    font-size: 0.85em;
+  }
+  .lobby-qr .polaroid {
+    width: 9.5em;
+  }
+  .lobby-qr .qr {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1;
+  }
+}
+@media (max-width: 760px) {
+  .board-join-host {
+    display: none;
+  }
+}
+
+/* The game panel's two halves (the round list, the settings): stacked on desktop, separate
+   tabs on phones. */
+.gp-game,
+.gp-settings {
+  display: flex;
+  flex-direction: column;
+}
+.show-m {
+  display: none;
+}
+@media (max-width: 760px) {
+  .hide-m {
+    display: none;
+  }
+  .show-m {
+    display: inline;
+  }
+  /* While the class writes or judges, the teacher's phone shows the clock first. */
+  .writing-right,
+  .duel-side {
+    order: -1;
+  }
+}
+@media (max-width: 900px) {
+  /* Three rows of tools would cover a third of a phone screen while pinned. */
+  .report-tools {
+    position: static;
+  }
 }

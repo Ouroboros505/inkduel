@@ -120,6 +120,16 @@ await shot(kids[1].page, '09-student-writing-chromebook');
 await shot(kids[0].page, '10-student-writing-phone');
 await wait(1600);
 await shot(board, '11-board-writing');
+// The countdown's progress ring must sit inside its timer (a stray `.bar` rule once moved it).
+const ring = await board.evaluate(() => {
+  const box = document.querySelector('.countdown')?.getBoundingClientRect();
+  const bar = document.querySelector('.countdown .bar')?.getBoundingClientRect();
+  if (!box || !bar) return 'no countdown';
+  const cx = bar.left + bar.width / 2;
+  const cy = bar.top + bar.height / 2;
+  return Math.abs(cx - (box.left + box.width / 2)) < box.width * 0.1 && Math.abs(cy - (box.top + box.height / 2)) < box.height * 0.1 ? 'ok' : 'off-centre';
+});
+if (ring !== 'ok') errors.push(`countdown ring: ${ring}`);
 for (const k of kids.slice(0, 3)) await clickText(k.page, "I'm done");
 
 await clickText(board, 'End writing now');

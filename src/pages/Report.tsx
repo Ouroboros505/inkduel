@@ -3,7 +3,7 @@ import type { Report, ReportEntry } from '../../shared/protocol';
 import { navigate } from '../lib/nav';
 import { K, load } from '../lib/store';
 import { fmtPin, LogoLink, plural, TeamBadge } from '../ui/bits';
-import { HostNav } from '../ui/hostnav';
+import { HostNav, MobileTabs } from '../ui/hostnav';
 
 const HELD: Record<string, string> = {
   empty: 'too short',
@@ -224,6 +224,7 @@ export function ReportPage({ pin }: { pin: string }) {
             })}
           </section>
         ))}
+      <MobileTabs active="games" />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import type { Report } from '../../shared/protocol';
 import { navigate } from '../lib/nav';
 import { clearGames, deleteGame, forgetHost, hostGames, loadGames, loadReport, saveReport } from '../lib/store';
 import { fmtPin, plural, Stamp, TeamBadge, tilt } from '../ui/bits';
-import { HostNav } from '../ui/hostnav';
+import { HostNav, MobileTabs } from '../ui/hostnav';
 
 interface RoomInfo {
   ok: boolean;
@@ -203,12 +203,12 @@ export function MyGames() {
             {stats.chart.length > 1 && (
               <div className="chart card" aria-label="Words written per game">
                 <h3>Words per game</h3>
-                <div className="bars">
+                <div className="gchart-bars">
                   {stats.chart.map((c, i) => (
-                    <div key={i} className="bar-col" title={`${c.words} words`}>
-                      <span className="bar-n">{c.words}</span>
-                      <div className="bar" style={{ height: `${(c.words / maxWords) * 100}%` }} />
-                      <span className="bar-date">{new Date(c.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                    <div key={i} className="gchart-col" title={`${c.words} words`}>
+                      <span className="gchart-n">{c.words}</span>
+                      <div className="gchart-bar" style={{ height: `${(c.words / maxWords) * 100}%` }} />
+                      <span className="gchart-date">{new Date(c.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                     </div>
                   ))}
                 </div>
@@ -282,6 +282,7 @@ export function MyGames() {
           <p className="hand-note left">Games you finish show up here, with their reports.</p>
         )}
       </section>
+      <MobileTabs active="games" />
     </div>
   );
 }

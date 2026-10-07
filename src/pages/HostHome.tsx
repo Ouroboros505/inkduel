@@ -6,7 +6,9 @@ import { navigate } from '../lib/nav';
 import { hostGames, K, load, loadCustom, loadSettings, save, saveCustom, type HostCreds } from '../lib/store';
 import { ChallengeArt, fmtPin } from '../ui/bits';
 import { ChallengeBrowser, ChallengePreview, readShared } from '../ui/challenges';
-import { HostNav } from '../ui/hostnav';
+import { HostNav, MobileTabs, type HomeTab } from '../ui/hostnav';
+
+const TABS: HomeTab[] = ['library', 'game', 'settings'];
 
 export function HostHome() {
   const [playlist, setPlaylist] = useState<Challenge[]>(() => load(K.playlist, []));
@@ -16,6 +18,16 @@ export function HostHome() {
   const [error, setError] = useState('');
   const [settingsKey, setSettingsKey] = useState(0);
   const [live] = useState(hostGames);
+  // Phones show one section at a time (see MobileTabs); wider screens show them all.
+  const [tab, setTabState] = useState<HomeTab>(() => {
+    const t = new URLSearchParams(location.search).get('tab') as HomeTab | null;
+    return t && TABS.includes(t) ? t : 'library';
+  });
+  const setTab = (t: HomeTab) => {
+    setTabState(t);
+    history.replaceState(null, '', t === 'library' ? '/host' : `/host?tab=${t}`);
+    window.scrollTo(0, 0);
+  };
 
   useEffect(() => void save(K.playlist, playlist), [playlist]);
   useEffect(() => void save(K.settings, settings), [settings]);
@@ -56,7 +68,7 @@ export function HostHome() {
   };
 
   return (
-    <div className="home">
+    <div className={`home m-${tab}`}>
       <HostNav active="build" />
 
       {live.length > 0 && (
@@ -77,6 +89,7 @@ export function HostHome() {
 
       <div className="home-grid">
         <aside className="game-panel notebook">
+          <div className="gp-game">
           <h2>Your game</h2>
           {playlist.length ? (
             <ol className="playlist">
@@ -121,7 +134,12 @@ export function HostHome() {
             </button>
           )}
           {error && <p className="error">{error}</p>}
+          <button className="btn m-add" onClick={() => setTab('library')}>
+            + Add challenges from the library
+          </button>
+          </div>
 
+          <div className="gp-settings">
           <div className="settings-head">
             <h3>Game settings</h3>
             <button className="link-btn" onClick={resetSettings}>
@@ -129,12 +147,25 @@ export function HostHome() {
             </button>
           </div>
           <SettingsForm key={settingsKey} settings={settings} set={set} />
+          </div>
         </aside>
 
         <main className="library">
           <ChallengeBrowser onPick={add} pickLabel="Add to game" chosen={playlist.map((c) => c.id)} />
         </main>
       </div>
+
+      {playlist.length > 0 && tab !== 'game' && (
+        <div className="m-startbar">
+          <button className="m-startbar-info" onClick={() => setTab('game')}>
+            🎮 <b>{playlist.length === 1 ? '1 round' : `${playlist.length} rounds`}</b> ready <span>review ›</span>
+          </button>
+          <button className="btn btn-accent" disabled={busy} onClick={create}>
+            {busy ? 'Opening…' : 'Start ▸'}
+          </button>
+        </div>
+      )}
+      <MobileTabs active={tab} onTab={setTab} rounds={playlist.length} />
 
       <footer className="home-foot">
         <p>
