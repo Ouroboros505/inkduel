@@ -342,13 +342,15 @@ function WritingStage({ view, offset }: { view: HostView; offset: number }) {
         <p className="eyebrow">Write!</p>
         <h1 className="board-title small">{c.title}</h1>
         <div className="prompt-row">
-          <div className="prompt-sheet notebook">
-            <p className="board-prompt">{c.prompt}</p>
+          <div className="prompt-col">
+            <div className="prompt-sheet notebook">
+              <p className="board-prompt">{c.prompt}</p>
+            </div>
+            <div className="crit">
+              <span className="sticky">Wins: {c.criterion}</span>
+            </div>
           </div>
           {hasPicture && <ChallengeArt challenge={c} className="board-art prompt-pic" polaroid />}
-        </div>
-        <div className="crit">
-          <span className="sticky">Wins: {c.criterion}</span>
         </div>
       </div>
       <div className="writing-right">

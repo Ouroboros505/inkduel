@@ -654,6 +654,9 @@ button:disabled {
   font-size: 0.95em;
   font-weight: 600;
   padding-top: 0.35em;
+  /* Wrap to the picture's width instead of widening the frame. */
+  width: 0;
+  min-width: 100%;
 }
 .art-emoji {
   display: grid;
@@ -1954,8 +1957,9 @@ button:disabled {
   gap: 1.6em;
   align-items: flex-start;
 }
-.prompt-row .prompt-sheet {
+.prompt-col {
   flex: 1;
+  min-width: 0;
 }
 .prompt-pic {
   flex: none;
@@ -2160,9 +2164,11 @@ button:disabled {
   justify-self: center;
 }
 .intro-main .board-art.polaroid img {
-  max-height: 52vh;
+  /* A fixed height lets the frame shrink to the picture instead of the column. */
+  height: min(50vh, 30em);
   width: auto;
   max-width: 100%;
+  object-fit: contain;
 }
 .board-tips {
   list-style: none;
