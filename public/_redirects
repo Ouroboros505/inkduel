@@ -1,0 +1,7 @@
+# The app's own pages all load index.html; anything else that doesn't exist is a real 404
+# (public/404.html). Without these rules Pages answered every missing file with index.html and a
+# 200, and during a deploy a script fetched before it arrived got HTML that the edge then cached.
+/host           /  200
+/host/*         /  200
+/play/*         /  200
+/report/*       /  200

@@ -17,4 +17,15 @@ export default defineConfig({
     proxy: api,
   },
   preview: { host: true, proxy: api },
+  build: {
+    rollupOptions: {
+      // Built files live under assets/b2/: a new folder for these names, because the old ones
+      // were cached at one Cloudflare edge as HTML (see public/_redirects) and that token can't purge.
+      output: {
+        entryFileNames: 'assets/b2/[name]-[hash].js',
+        chunkFileNames: 'assets/b2/[name]-[hash].js',
+        assetFileNames: 'assets/b2/[name]-[hash][extname]',
+      },
+    },
+  },
 });

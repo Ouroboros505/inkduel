@@ -1317,6 +1317,11 @@ button:disabled {
   --lh: 2.6rem;
   position: sticky;
   top: 1rem;
+  /* Pinned, but never taller than the window: with the settings open it scrolls on its own. */
+  /* 6rem leaves room for the page header above it, so the bottom fits even before the page scrolls. */
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -4222,4 +4227,17 @@ button:disabled {
   .report-tools {
     position: static;
   }
+}
+
+@media (max-width: 900px) {
+  .game-panel {
+    max-height: none;
+    overflow: visible;
+  }
+  .desk-arrow {
+    display: none;
+  }
+}
+.nowrap {
+  white-space: nowrap;
 }

@@ -119,7 +119,7 @@ export function HostHome() {
             </ol>
           ) : (
             <p className="empty">
-              ← pick challenges from the library.
+              pick challenges from the<span className="nowrap"> library<span className="desk-arrow">{'\u00a0→'}</span></span>
               <br />
               each one is a round: write, duel, vote.
             </p>
