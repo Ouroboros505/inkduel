@@ -4241,3 +4241,27 @@ button:disabled {
 .nowrap {
   white-space: nowrap;
 }
+
+/* Writing ends on the clock or the teacher's button; when everyone is done the board says so. */
+.all-done {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.05em;
+  --rot: -1.5deg;
+  background: var(--green-soft);
+}
+.btn.pulse {
+  animation: pulse-btn 1.1s ease-in-out infinite;
+}
+@keyframes pulse-btn {
+  50% {
+    transform: scale(1.05);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+}
+.done-note {
+  font-size: 1.3rem;
+  margin: 0.5rem 0 0;
+  color: var(--green);
+  transform: none;
+}

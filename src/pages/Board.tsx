@@ -385,6 +385,9 @@ function WritingStage({ view, offset }: { view: HostView; offset: number }) {
       </div>
       <div className="writing-right">
         <Countdown clock={view.clock} offset={offset} size={290} />
+        {view.progress.total > 0 && view.progress.done === view.progress.total && (
+          <div className="all-done sticky">✓ Everyone's done! End writing when you're ready.</div>
+        )}
         <div className="live-stats">
           <div>
             <b>{view.progress.done}</b>
@@ -763,7 +766,8 @@ function Controls({ view, send, offset, openPicker }: { view: HostView; send: Se
     case 'duel':
     case 'vote': {
       const left = remaining(view.clock, offset);
-      const label = view.phase === 'writing' ? 'End writing now' : view.phase === 'duel' ? 'End the duels now' : 'Close the vote';
+      const allDone = view.phase === 'writing' && view.progress.total > 0 && view.progress.done === view.progress.total;
+      const label = view.phase === 'writing' ? (allDone ? "Everyone's done · End writing" : 'End writing now') : view.phase === 'duel' ? 'End the duels now' : 'Close the vote';
       return (
         <>
           {end}
@@ -783,7 +787,7 @@ function Controls({ view, send, offset, openPicker }: { view: HostView; send: Se
               )}
             </>
           )}
-          <button className="btn btn-accent btn-big" onClick={() => send({ t: 'skip' })}>
+          <button className={`btn btn-accent btn-big${allDone ? ' pulse' : ''}`} onClick={() => send({ t: 'skip' })}>
             {label} ▸
           </button>
         </>

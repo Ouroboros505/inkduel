@@ -437,7 +437,6 @@ export class Room extends DurableObject<Env> {
       e.words = countWords(e.text);
       const doneChanged = typeof msg.done === 'boolean' && msg.done !== e.done;
       if (typeof msg.done === 'boolean') e.done = msg.done;
-      this.checkWritersDone();
       this.changed(doneChanged ? 120 : 1000);
     } else if (msg.t === 'pick' && s.phase === 'duel' && r) {
       const d = r.duels.find((x) => x.id === msg.duel && x.voter === pid);
@@ -470,12 +469,10 @@ export class Room extends DurableObject<Env> {
       .map((p) => p.id);
   }
 
-  private checkWritersDone() {
-    const r = this.cur!;
-    const online = this.online();
-    const writing = r.entries.filter((e) => online.has(e.author));
-    if (writing.length && writing.every((e) => e.done)) this.hurry(2500);
-  }
+  // Writing never ends early because everyone pressed "I'm done": with one or two students that
+  // ended the round seconds after it began, which looked like the time limit was broken. The
+  // board shows "everyone's done" instead and the teacher decides (hostView progress).
+
 
   // ---- teacher ------------------------------------------------------------------------------
 

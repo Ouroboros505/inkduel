@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { countWords, MAX_NAME, MAX_TEXT, type ClientMsg, type PlayerView, type TeamInfo } from '../../shared/protocol';
 import { useTimeUp, useWithin } from '../lib/clock';
+import { useWakeLock } from '../lib/wakelock';
 import { navigate } from '../lib/nav';
 import { useRoom, type Status } from '../lib/room';
 import { drop, K, load, save } from '../lib/store';
@@ -127,6 +128,8 @@ function NameForm({ onJoin, error }: { onJoin: (name: string) => void; error: st
 function Game({ view, offset, send, status }: { view: PlayerView; offset: number; send: Send; status: Status }) {
   const team = view.teams.find((t) => t.id === view.me.team);
   const timed = ['writing', 'duel', 'vote'].includes(view.phase) && !view.me.late;
+  // The whole game, not only the timed phases: students read the board between them too.
+  useWakeLock(view.phase !== 'summary');
   return (
     <div className="play" style={teamVars(team)}>
       <header className="play-top">
@@ -358,6 +361,7 @@ function Writing({ view, offset, send, status }: { view: PlayerView; offset: num
           </button>
         )}
       </div>
+      {done && !timeUp && <p className="hand-note done-note">Done! Waiting for the clock or your teacher. You can keep editing.</p>}
 
       {showTips && !timeUp && (
         <ul className="tip-list">
