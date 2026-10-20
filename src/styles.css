@@ -4265,3 +4265,13 @@ button:disabled {
   color: var(--green);
   transform: none;
 }
+
+/* "Text A" on an anonymous finalist, where the team badge used to be. */
+.final-label {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.05em;
+}
+.final-label.big {
+  font-size: 1.4em;
+}

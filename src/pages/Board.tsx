@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
-import type { Challenge, ClientMsg, HostEntry, HostView, Settings, TeamInfo } from '../../shared/protocol';
+import type { Challenge, ClientMsg, HostEntry, HostView, Settings } from '../../shared/protocol';
 import { mmss, remaining, useWithin } from '../lib/clock';
 import { navigate } from '../lib/nav';
 import { useRoom } from '../lib/room';
@@ -172,7 +172,7 @@ function BoardLive({ pin, token }: { pin: string; token: string }) {
         {view.phase === 'intro' && <Intro view={view} />}
         {view.phase === 'writing' && <WritingStage view={view} offset={offset} />}
         {view.phase === 'duel' && <DuelStage view={view} offset={offset} />}
-        {view.phase === 'finals' && <FinalsStage view={view} fins={fins} send={send} onRead={setReader} />}
+        {view.phase === 'finals' && <FinalsStage fins={fins} send={send} onRead={setReader} />}
         {view.phase === 'vote' && <VoteStage view={view} fins={fins} offset={offset} />}
         {view.phase === 'results' && <ResultsStage view={view} fins={fins} send={send} />}
         {view.phase === 'summary' && <SummaryStage view={view} />}
@@ -183,7 +183,7 @@ function BoardLive({ pin, token }: { pin: string; token: string }) {
       </footer>
 
       {reader !== null && fins[reader] && (
-        <Reader entries={fins} index={reader} teams={view.teams} setIndex={setReader} onClose={() => setReader(null)} />
+        <Reader entries={fins} index={reader} setIndex={setReader} onClose={() => setReader(null)} />
       )}
       {panel && <TeacherPanel view={view} send={send} onClose={() => setPanel(false)} />}
       {picker && (
@@ -454,13 +454,16 @@ function DuelStage({ view, offset }: { view: HostView; offset: number }) {
   );
 }
 
-function FinalCard({ e, i, team, onRead, onVeto }: { e: HostEntry; i: number; team?: TeamInfo; onRead?: () => void; onVeto?: () => void }) {
+// Finalists are anonymous until the results: same neutral colour for all, no team shown.
+const ANON = { '--team': '#ffd23f', '--team-on': 'var(--ink)' } as React.CSSProperties;
+
+function FinalCard({ e, i, onRead, onVeto }: { e: HostEntry; i: number; onRead?: () => void; onVeto?: () => void }) {
   const [armed, setArmed] = useState(false);
   return (
-    <article className="final index-card final-card" style={teamVars(team)}>
+    <article className="final index-card final-card" style={ANON}>
       <div className="card-head">
         <span className="letter">{String.fromCharCode(65 + i)}</span>
-        <TeamBadge team={team} />
+        <b className="final-label">Text {String.fromCharCode(65 + i)}</b>
         <span className="spacer" />
         {onVeto &&
           (armed ? (
@@ -486,7 +489,7 @@ function FinalCard({ e, i, team, onRead, onVeto }: { e: HostEntry; i: number; te
   );
 }
 
-function FinalsStage({ view, fins, send, onRead }: { view: HostView; fins: HostEntry[]; send: Send; onRead: (i: number) => void }) {
+function FinalsStage({ fins, send, onRead }: { fins: HostEntry[]; send: Send; onRead: (i: number) => void }) {
   if (!fins.length)
     return (
       <div className="stage-center">
@@ -503,16 +506,15 @@ function FinalsStage({ view, fins, send, onRead }: { view: HostView; fins: HostE
       </div>
       <div className={`final-grid n${fins.length}`}>
         {fins.map((e, i) => (
-          <FinalCard key={e.id} e={e} i={i} team={view.teams.find((t) => t.id === e.team)} onRead={() => onRead(i)} onVeto={() => send({ t: 'veto', id: e.id })} />
+          <FinalCard key={e.id} e={e} i={i} onRead={() => onRead(i)} onVeto={() => send({ t: 'veto', id: e.id })} />
         ))}
       </div>
     </div>
   );
 }
 
-function Reader({ entries, index, teams, setIndex, onClose }: { entries: HostEntry[]; index: number; teams: TeamInfo[]; setIndex: (i: number) => void; onClose: () => void }) {
+function Reader({ entries, index, setIndex, onClose }: { entries: HostEntry[]; index: number; setIndex: (i: number) => void; onClose: () => void }) {
   const e = entries[index];
-  const team = teams.find((t) => t.id === e.team);
   const found = useMemo(() => spot(e.text), [e.text]);
   const [tech, setTech] = useState<Technique | null>(null);
   useEffect(() => setTech(null), [index]);
@@ -527,10 +529,10 @@ function Reader({ entries, index, teams, setIndex, onClose }: { entries: HostEnt
   }, [index, entries.length]);
   const kinds = (Object.keys(TECHNIQUES) as Technique[]).filter((k) => found[k]);
   return (
-    <div className="reader" style={teamVars(team)}>
+    <div className="reader" style={ANON}>
       <header>
         <span className="letter">{String.fromCharCode(65 + index)}</span>
-        <TeamBadge team={team} big />
+        <b className="final-label big">Text {String.fromCharCode(65 + index)}</b>
         <span className="spacer" />
         <button className="icon-btn" onClick={onClose} aria-label="Close">
           ✕
@@ -577,7 +579,7 @@ function VoteStage({ view, fins, offset }: { view: HostView; fins: HostEntry[]; 
         <div>
           <p className="eyebrow">Class vote · on your screen</p>
           <h1 className="board-title small">{view.challenge?.question}</h1>
-          <p className="board-sub">You can vote for any text except your own.</p>
+          <p className="board-sub">You can vote for any text except your own team's.</p>
         </div>
         <div className="vote-side">
           {view.clock.endsAt !== null || view.clock.paused !== null ? <Countdown clock={view.clock} offset={offset} size={150} warnAt={10_000} /> : null}
@@ -593,7 +595,7 @@ function VoteStage({ view, fins, offset }: { view: HostView; fins: HostEntry[]; 
       </div>
       <div className={`final-grid n${fins.length}`}>
         {fins.map((e, i) => (
-          <FinalCard key={e.id} e={e} i={i} team={view.teams.find((t) => t.id === e.team)} />
+          <FinalCard key={e.id} e={e} i={i} />
         ))}
       </div>
     </div>

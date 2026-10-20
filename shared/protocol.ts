@@ -175,7 +175,8 @@ export interface PlayerView {
   /** Openings of teammates' texts, anonymous. */
   snippets: string[];
   duels: { id: string; a: EntryCard; b: EntryCard; pick: 0 | 1 | null }[];
-  finalists: (EntryCard & { mine: boolean; votes?: number })[];
+  /** `team` is -1 until the results: finalists are anonymous during the finals and the vote. */
+  finalists: (EntryCard & { mine: boolean; ownTeam: boolean; votes?: number })[];
   vote: string | null;
   winners: number[];
   points: Record<number, number>;

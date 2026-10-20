@@ -441,6 +441,8 @@ function Duels({ view, send }: { view: PlayerView; send: Send }) {
   );
 }
 
+const ANON = { '--team': '#ffd23f', '--team-on': 'var(--ink)' } as React.CSSProperties;
+
 function Finals({ view, send }: { view: PlayerView; send: Send }) {
   const [mine, setMine] = useState<string | null>(view.vote);
   useEffect(() => setMine(view.vote), [view.vote]);
@@ -462,17 +464,17 @@ function Finals({ view, send }: { view: PlayerView; send: Send }) {
       {view.result?.finalist && <p className="banner">⭐ Your text made it to the final!</p>}
       <div className="final-list">
         {view.finalists.map((f, i) => {
-          const team = view.teams.find((t) => t.id === f.team);
+          // Anonymous until the results: the same neutral colour for every finalist, no team.
           return (
-            <article key={f.id} className={`final-card index-card${mine === f.id ? ' chosen' : ''}`} style={teamVars(team)}>
+            <article key={f.id} className={`final-card index-card${mine === f.id ? ' chosen' : ''}`} style={ANON}>
               <div className="card-head">
                 <span className="letter">{String.fromCharCode(65 + i)}</span>
-                <TeamBadge team={team} />
+                <b className="final-label">Text {String.fromCharCode(65 + i)}</b>
               </div>
               <p className="card-text">{f.text}</p>
               {voting &&
-                (f.mine ? (
-                  <p className="muted small">This one's yours: vote for another.</p>
+                (f.ownTeam ? (
+                  <p className="muted small">{f.mine ? "This one's yours" : "This one's from your team"}: vote for another.</p>
                 ) : (
                   <button className={`btn wide ${mine === f.id ? 'btn-good' : 'btn-accent'}`} onClick={() => cast(f.id)}>
                     {mine === f.id ? '✓ Your vote' : `Vote ${String.fromCharCode(65 + i)}`}

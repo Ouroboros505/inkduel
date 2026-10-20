@@ -194,14 +194,32 @@ async function main() {
   const solo = host.view.phase === 'results';
   if (solo) check(host.view.finalists.length <= 1, 'one finalist goes straight to results');
   else await Promise.all(students.map((c) => c.until((x) => x.view.phase === 'vote', 'vote')));
-  for (const c of [...students, late]) {
-    const options = c.view.finalists.filter((f) => !f.mine);
-    if (options.length) c.send({ t: 'cast', id: options[0].id });
+  const voters = [...students, late];
+  if (!solo) {
+    check(voters.every((c) => c.view.finalists.every((f) => f.team === -1)), 'finalists are anonymous: no team sent to phones');
+    // Someone on a team with a finalist tries to vote for it: refused.
+    const cheat = voters.find((c) => c.view.finalists.some((f) => f.ownTeam));
+    if (cheat) {
+      cheat.send({ t: 'cast', id: cheat.view.finalists.find((f) => f.ownTeam).id });
+      await new Promise((r) => setTimeout(r, 600));
+      check(cheat.view.vote === null, 'a vote for your own team is refused');
+    }
+  }
+  let expected = 0;
+  for (const c of voters) {
+    const options = c.view.finalists.filter((f) => !f.ownTeam);
+    if (options.length) {
+      c.send({ t: 'cast', id: options[0].id });
+      expected++;
+    }
   }
   await host.until((c) => c.view.phase === 'results', 'results after all votes', 8000);
   const totalVotes = host.view.entries.reduce((n, e) => n + e.votes, 0);
   if (!solo) {
-    check(totalVotes === students.length + 1, `all ${totalVotes} votes counted`);
+    check(true, 'the vote closes once everyone who can vote has voted');
+    check(totalVotes === expected, `all ${totalVotes} votes counted`);
+    const fin = host.view.entries.filter((e) => host.view.finalists.includes(e.id));
+    check(fin.every((e) => e.votes <= voters.filter((c) => c.view.me.team !== e.team).length), 'no finalist got votes from its own team');
     check(Object.values(host.view.points).reduce((a, b) => a + b, 0) === totalVotes, 'points equal votes');
   }
   check(host.view.winners.length >= 1, `winner: ${host.view.winners.map((t) => teams[t].name).join(', ')}`);

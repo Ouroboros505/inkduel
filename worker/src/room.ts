@@ -447,16 +447,14 @@ export class Room extends DurableObject<Env> {
       this.changed();
     } else if (msg.t === 'cast' && s.phase === 'vote' && r) {
       const e = r.entries.find((x) => x.id === msg.id);
-      if (!e || !r.finalists.includes(e.id) || e.author === pid || !this.entryOf(pid) && !this.playerOnTeam(pid)) return;
+      const team = s.players.find((p) => p.id === pid)?.team ?? null;
+      // No votes for your own team's finalist (which also rules out your own text).
+      if (!e || !r.finalists.includes(e.id) || team === null || e.team === team) return;
       r.votes[pid] = e.id;
       const voters = this.voters();
       if (voters.length && voters.every((v) => r.votes[v])) this.hurry(1200);
       this.changed();
     }
-  }
-
-  private playerOnTeam(pid: string): boolean {
-    return this.s!.players.some((p) => p.id === pid && p.team !== null);
   }
 
   /** Online students who can vote in the final: on a team, and with something to vote for. */
@@ -465,7 +463,7 @@ export class Room extends DurableObject<Env> {
     const online = this.online();
     return this.s!.players
       .filter((p) => p.team !== null && online.has(p.id))
-      .filter((p) => r.finalists.some((id) => r.entries.find((e) => e.id === id)?.author !== p.id))
+      .filter((p) => r.finalists.some((id) => r.entries.find((e) => e.id === id)?.team !== p.team))
       .map((p) => p.id);
   }
 
@@ -883,7 +881,16 @@ export class Room extends DurableObject<Env> {
       finalists: showFinal
         ? r!.finalists.map((id) => {
             const f = r!.entries.find((x) => x.id === id)!;
-            return { ...this.card(r!, id), mine: f.author === pid, votes: phase === 'results' ? f.votes : undefined };
+            const card = this.card(r!, id);
+            // Finalists are anonymous until the vote closes: phones get no team, only whether the
+            // text is from their own team (they can't vote for it).
+            return {
+              ...card,
+              team: phase === 'results' ? card.team : -1,
+              mine: f.author === pid,
+              ownTeam: f.team === p.team,
+              votes: phase === 'results' ? f.votes : undefined,
+            };
           })
         : [],
       vote: r && (phase === 'vote' || phase === 'results') ? r.votes[pid] ?? null : null,
